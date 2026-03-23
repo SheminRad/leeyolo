@@ -55,7 +55,7 @@ __all__ = (
     "GSConv",
     "SGC2f",
     "ECA",
-    "ECA",
+    "EMA",
 )
 
 
