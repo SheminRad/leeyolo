@@ -1,5 +1,5 @@
 task: detect  # Fixes the guessing warning
-nc: 80
+nc: 4
 scales:
   n: [0.33, 0.25, 1024]
 
