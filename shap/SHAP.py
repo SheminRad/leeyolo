@@ -17,7 +17,7 @@ model = YOLO(MODEL_PATH)
 
 
 def yolo_predict_wrapper(images):
-    # Hypersensitive wrapper logic initialized (summed confidences, NMS disabled)
+    # Hypersensitive wrapper for SHAP logic
     batch_scores = []
     for img in images:
         img_uint8 = (img * 255).astype(np.uint8)
@@ -35,50 +35,57 @@ def yolo_predict_wrapper(images):
 
 
 def main():
-    # Fetch the 4 lists populated with 5 images each
     lists = get_image_lists()
 
     for target_class_id, image_list in enumerate(lists):
         class_name = CLASS_NAMES[target_class_id]
-
-        # Creates the folder (e.g., 'pothole/') if it does not already exist
         os.makedirs(class_name, exist_ok=True)
-
         print(f"\n--- Starting Batch Analysis for: {class_name.upper()} ---")
 
         for image_name in image_list:
             full_image_path = os.path.join(BASE_IMAGE_DIR, image_name)
             print(f"Processing: {image_name}")
 
-            img = cv2.imread(full_image_path)
-            if img is None:
+            # 1. Load the raw image
+            img_bgr = cv2.imread(full_image_path)
+            if img_bgr is None:
                 continue
+            img_bgr = cv2.resize(img_bgr, (640, 640))
 
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            img = cv2.resize(img, (640, 640))
-            img_normalized = img.astype(np.float32) / 255.0
+            # ---------------------------------------------------------
+            # NEW: Generate the image with Bounding Boxes
+            # We use conf=0.25 so it only draws real, confident detections
+            visual_results = model.predict(img_bgr, imgsz=640, verbose=False, conf=0.25)
+            img_boxed_bgr = visual_results[0].plot()  # YOLO's built-in drawing tool
 
+            # Convert both images to RGB and normalize for SHAP
+            img_boxed_rgb = cv2.cvtColor(img_boxed_bgr, cv2.COLOR_BGR2RGB)
+            img_boxed_normalized = img_boxed_rgb.astype(np.float32) / 255.0
+
+            img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+            img_normalized = img_rgb.astype(np.float32) / 255.0
+            # ---------------------------------------------------------
+
+            # 2. Calculate SHAP using the RAW image so gradients aren't ruined
             masker = shap.maskers.Image("blur(20,20)", img_normalized.shape)
             explainer = shap.Explainer(yolo_predict_wrapper, masker, output_names=CLASS_NAMES)
-
-            # Execute SHAP partition
             shap_values = explainer(np.expand_dims(img_normalized, axis=0), max_evals=500, batch_size=10)
 
-            # Target plotting sequence
+            # 3. Plot the results!
             target_shap_array = shap_values.values[..., target_class_id]
+
+            # We pass the BOXED image as the pixel_values so it shows on the left
             shap.image_plot(
                 shap_values=[target_shap_array],
-                pixel_values=np.expand_dims(img_normalized, axis=0),
+                pixel_values=np.expand_dims(img_boxed_normalized, axis=0),
                 show=False
             )
 
-            # Format requested: e.g., pothole/pothole_China_Drone_000123.png
-            # Replaced .jpg with .png in the output string to ensure correct saving format
+            # Save the figure
             base_img_name = image_name.replace(".jpg", "")
             save_name = os.path.join(class_name, f"{class_name}_{base_img_name}.png")
-
             plt.savefig(save_name, bbox_inches='tight', dpi=300)
-            plt.close()  # Critical: clear RAM between plots to prevent out-of-memory crashes
+            plt.close()
 
             print(f"Saved: {save_name}")
 
