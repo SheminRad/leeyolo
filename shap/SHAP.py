@@ -8,8 +8,8 @@ from ultralytics import YOLO
 # Import the extraction function from your new file
 from find_images import get_image_lists
 
-MODEL_PATH = "/home/shemin/PycharmProjects/leeyolo/runs/detect/lee_yolo_rdd2022/weights/best.pt"
-BASE_IMAGE_DIR = "/home/shemin/PycharmProjects/leeyolo/RDD2022/China_Drone/train/images"
+MODEL_PATH = "runs/detect/lee_yolo_rdd2022/weights/best.pt"
+BASE_IMAGE_DIR = "RDD2022/Czech/"
 CLASS_NAMES = ["longitudinal_crack", "transverse_crack", "alligator_crack", "pothole"]
 
 print(f"Loading Model: {MODEL_PATH}...")
