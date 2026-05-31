@@ -6,7 +6,7 @@ The experiments in this project evaluate how well a model can adapt when trained
 
 ## 1. Environment Setup
 
-This project uses a modified version of the Ultralytics library to inject label-shift weights directly into the loss function. **Please do not run this using a globally installed pip version of Ultralytics.** The code must be executed directly from this directory so it can access the custom `ultralytics/utils/loss.py` file included in this submission.
+This project uses a modified version of the Ultralytics library to inject label-shift weights directly into the loss function. **Please do not run this using a globally installed pip version of Ultralytics.** The code must be executed directly from this directory so it can access the custom `ultralytics/utils/loss.py` file included in this submission as well as the LEE-YOLO architecture.
 
 **Requirements:**
 * Python 3.9 or higher
