@@ -11,7 +11,7 @@ def main():
 
     print("2. Starting ROBUST Training (Domain Randomization) on Mac M4...")
     results = model.train(
-        data="china_drone.yaml",  # We train on the Source Domain
+        data="japan.yaml",  # We train on the Source Domain
         epochs=30,
         batch=-1,
         imgsz=640,
@@ -38,7 +38,7 @@ def main():
 
         optimizer="AdamW",
         project="robust/detect",
-        name="lee_yolo_fully_robust_m4"
+        name="lee_yolo_robust"
     )
 
     print("✅ Robust Training Complete! Ready for Edge-Constraint Validation.")

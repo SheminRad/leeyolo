@@ -6,7 +6,7 @@ from ultralytics import YOLO
 def main():
     print("Loading model...")
     # Load your custom model
-    model = YOLO("/home/shemin/PycharmProjects/leeyolo/runs/detect/lee_yolo_rdd2022/weights/best.pt")
+    model = YOLO("/home/shemin/PycharmProjects/leeyolo/runs/detect/lee_yolo/weights/best.pt")
 
     # Extract the raw PyTorch model and set it to evaluation mode
     pytorch_model = model.model.eval()

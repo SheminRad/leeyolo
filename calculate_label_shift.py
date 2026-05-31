@@ -11,11 +11,11 @@ def calculate_bbse_weights():
     # ==========================================
     # 1. CONFIGURATION
     # ==========================================
-    MODEL_PATH = "/home/shemin/PycharmProjects/leeyolo/runs/detect/lee_yolo_rdd2022/weights/best.pt"  # Your Phase 1 model
+    MODEL_PATH = "/home/shemin/PycharmProjects/leeyolo/runs/detect/lee_yolo/weights/best.pt"  # Your Phase 1 model
 
-    SOURCE_VAL_YAML = "china_drone.yaml"  # The Drone dataset
-    TARGET_TRAIN_DIR = "RDD2022/Czech/train/images"  # The Car dataset (IMAGES ONLY)
-    SOURCE_TRAIN_LABELS = "RDD2022/China_Drone/train/labels"  # To get P_train(y)
+    SOURCE_VAL_YAML = "japan.yaml"  # The Drone dataset
+    TARGET_TRAIN_DIR = "clustered_JapanUS/United_States/train/images"  # The Car dataset (IMAGES ONLY)
+    SOURCE_TRAIN_LABELS = "clustered_JapanUS/Japan/train/labels"  # To get P_train(y)
 
     num_classes = 4
     model = YOLO(MODEL_PATH)
