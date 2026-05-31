@@ -5,7 +5,7 @@ from ultralytics import YOLO
 # 1. CONFIGURATION VARIABLES
 # =====================================================================
 MODEL_DISPLAY_NAME = "LEE-YOLO"
-MODEL_PATH = "/home/shemin/PycharmProjects/leeyolo/runs/detect/robust/detect/lee_yolo/weights/best.pt"
+MODEL_PATH = "/home/shemin/PycharmProjects/leeyolo/runs/detect/lee_yolo/weights/best.pt"
 DATASET_YAML = "us.yaml"
 dataset_name = DATASET_YAML.split(".")[0]
 KNOWN_GFLOPS = 4.91
