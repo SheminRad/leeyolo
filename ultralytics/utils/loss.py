@@ -329,7 +329,33 @@ class KeypointLoss(nn.Module):
         e = d / ((2 * self.sigmas).pow(2) * (area + 1e-9) * 2)  # from cocoeval
         return (kpt_loss_factor.view(-1, 1) * ((1 - torch.exp(-e)) * kpt_mask)).mean()
 
+class SafeBCE(nn.Module):
+    def __init__(self, pos_weight=None):
+        super().__init__()
+        self.pos_weight = pos_weight
+        # Standard loss, no pos_weight here to avoid the C++ backend panic
+        self.loss_fn = nn.BCEWithLogitsLoss(reduction="none")
 
+    def forward(self, pred, target):
+        # 1. THE ISOLATION BARRIER
+        # By cloning the tensors, we force PyTorch to allocate fresh, unbroken memory.
+        # This completely shields the complex backward math from the MPS strided-view bug.
+        pred_safe = pred.clone()
+        target_safe = target.clone()
+
+        # 2. Calculate standard loss
+        loss = self.loss_fn(pred_safe, target_safe)
+
+        # 3. Apply the Label-Shift weights manually
+        if self.pos_weight is not None:
+            # Align the 4 weights to the 4 classes
+            w = self.pos_weight.view(1, 1, -1)
+
+            # Mathematical mask: Positive targets get our weight, negatives get 1.0
+            weight_mask = target_safe * w + (1.0 - target_safe)
+            loss = loss * weight_mask
+
+        return loss
 class v8DetectionLoss:
     """Criterion class for computing training losses for YOLOv8 object detection."""
 
@@ -339,7 +365,26 @@ class v8DetectionLoss:
         h = model.args  # hyperparameters
 
         m = model.model[-1]  # Detect() module
-        self.bce = nn.BCEWithLogitsLoss(reduction="none")
+        # ==========================================================
+        # LEE-YOLO: DYNAMIC LABEL SHIFT WEIGHT LOADER (MPS CLONE BYPASS)
+        # ==========================================================
+        import os
+        import torch
+        import torch.nn as nn
+
+
+
+        # Check the root of your PyCharm project for the weights file
+        weight_path = os.path.join(os.getcwd(), "domain_weights.pt")
+
+        if os.path.exists(weight_path):
+            self.label_shift_weights = torch.load(weight_path, map_location=device, weights_only=True)
+            print(f"\n🔄 [LEE-YOLO] Domain weights loaded safely (Clone Isolation Active): {self.label_shift_weights}")
+            self.bce = SafeBCE(pos_weight=self.label_shift_weights)
+        else:
+            print("\n⚠️ [LEE-YOLO] No domain_weights.pt found. Defaulting to standard training.")
+            self.bce = SafeBCE()
+        # ==========================================================
         self.hyp = h
         self.stride = m.stride  # model strides
         self.nc = m.nc  # number of classes
