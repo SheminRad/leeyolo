@@ -77,3 +77,6 @@ python robust_test_metrics_US.py
 ```
 
 Live training charts and validation visuals can be found in the respective `runs/detect/` subdirectories.
+## 5. References
+
+* "Enhancing road maintenance through cyber-physical integration: The LEE-YOLO model for drone-assisted pavement crack detection." *IEEE Transactions on Intelligent Transportation Systems*, vol. 26, no. 9, pp. 14169–14178, 2025. DOI: [10.1109/TITS.2025.3540909](https://doi.org/10.1109/TITS.2025.3540909).
