@@ -2,16 +2,16 @@ task: detect
 mode: train
 model: lee-yolov8n.yaml
 data: china_drone.yaml
-epochs: 300
+epochs: 30
 time: null
 patience: 100
-batch: 16
+batch: -1
 imgsz: 640
 save: true
 save_period: -1
 cache: false
 device: '0'
-workers: 2
+workers: 8
 project: null
 name: lee_yolo_rdd2022
 exist_ok: false
@@ -106,4 +106,4 @@ auto_augment: randaugment
 erasing: 0.4
 cfg: null
 tracker: botsort.yaml
-save_dir: /home/khan/Shemin/Pycharm/leeyolo/runs/detect/lee_yolo_rdd2022
+save_dir: /home/shemin/PycharmProjects/leeyolo/runs/detect/lee_yolo_rdd2022

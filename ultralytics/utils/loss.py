@@ -328,7 +328,9 @@ class KeypointLoss(nn.Module):
         # e = d / (2 * (area * self.sigmas) ** 2 + 1e-9)  # from formula
         e = d / ((2 * self.sigmas).pow(2) * (area + 1e-9) * 2)  # from cocoeval
         return (kpt_loss_factor.view(-1, 1) * ((1 - torch.exp(-e)) * kpt_mask)).mean()
+# # ==========================================================
 
+# # ==========================================================
 class SafeBCE(nn.Module):
     def __init__(self, pos_weight=None):
         super().__init__()
@@ -356,6 +358,9 @@ class SafeBCE(nn.Module):
             loss = loss * weight_mask
 
         return loss
+    # # ==========================================================
+
+    # # ==========================================================
 class v8DetectionLoss:
     """Criterion class for computing training losses for YOLOv8 object detection."""
 
@@ -365,9 +370,9 @@ class v8DetectionLoss:
         h = model.args  # hyperparameters
 
         m = model.model[-1]  # Detect() module
-        # ==========================================================
-        # LEE-YOLO: DYNAMIC LABEL SHIFT WEIGHT LOADER (MPS CLONE BYPASS)
-        # ==========================================================
+        # # ==========================================================
+        # # LEE-YOLO: DYNAMIC LABEL SHIFT WEIGHT LOADER (MPS CLONE BYPASS)
+        # # ==========================================================
         import os
         import torch
         import torch.nn as nn
@@ -384,7 +389,8 @@ class v8DetectionLoss:
         else:
             print("\n⚠️ [LEE-YOLO] No domain_weights.pt found. Defaulting to standard training.")
             self.bce = SafeBCE()
-        # ==========================================================
+        # # ==========================================================
+        # self.bce = nn.BCEWithLogitsLoss(reduction="none")
         self.hyp = h
         self.stride = m.stride  # model strides
         self.nc = m.nc  # number of classes

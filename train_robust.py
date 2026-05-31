@@ -10,9 +10,9 @@ def main():
     results = model.train(
         data="china_drone.yaml",  # We train on the Source Domain
         epochs=30,
-        batch=16,
-        imgsz=480,
-        patience=5,
+        batch=-1,
+        imgsz=640,
+        # patience=5,
 
         # ---> HARDWARE ACCELERATION <---
         # device="mps",  # Utilizes the Apple Silicon M4 Neural Engine
@@ -34,7 +34,7 @@ def main():
         # -------------------------------------------------------------
 
         optimizer="AdamW",
-        project="runs/detect",
+        project="robust/detect",
         name="lee_yolo_fully_robust_m4"
     )
 

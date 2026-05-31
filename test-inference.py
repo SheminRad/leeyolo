@@ -5,7 +5,7 @@ def main():
     print("1. Loading your trained LEE-YOLO brain...")
     # IMPORTANT: Make sure this path points exactly to where your best.pt is located!
     # Based on your screenshots, it should be in the 'lee_yolo_rdd20224' folder.
-    model = YOLO("/home/khan/Shemin/Pycharm/leeyolo/runs/detect/lee_yolo_rdd2022/weights/best.pt")
+    model = YOLO("/home/shemin/PycharmProjects/leeyolo/runs/detect/lee_yolo_rdd2022/weights/best.pt")
 
     print("2. Running inference on a test image...")
     # Point 'source' to an image or video you want to test.
