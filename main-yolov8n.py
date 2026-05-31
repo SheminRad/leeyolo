@@ -2,6 +2,7 @@ from ultralytics import YOLO
 import os
 import shutil
 
+os.environ["LEE_YOLO_ROBUST_MODE"] = "False"
 # 1. Define the Custom Callback
 def save_epoch_snapshot(trainer):
     """Copies the live results.png and saves it with the epoch number."""
@@ -26,7 +27,6 @@ def main():
         data="china_drone.yaml",
         epochs=30,
         batch=-1,  # <-- FIX 1: Drop batch size from 32 to 16
-          # <-- FIX 2: Drop workers from 8 to 2 (This saves MASSIVE System RAM)
         imgsz=640,
         device=0,
         optimizer="AdamW",

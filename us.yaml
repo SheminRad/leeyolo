@@ -1,0 +1,18 @@
+# us.yaml
+
+# Base path relative to your project root
+path: clustered_JapanUS/United_States
+
+# Train and Val image directories
+train: train/images
+val: val/images
+
+# Number of classes
+nc: 4
+
+# Standard RDD2022 Class Mapping
+names:
+  0: longitudinal_crack
+  1: transverse_crack
+  2: alligator_crack
+  3: pothole

@@ -328,27 +328,30 @@ class KeypointLoss(nn.Module):
         # e = d / (2 * (area * self.sigmas) ** 2 + 1e-9)  # from formula
         e = d / ((2 * self.sigmas).pow(2) * (area + 1e-9) * 2)  # from cocoeval
         return (kpt_loss_factor.view(-1, 1) * ((1 - torch.exp(-e)) * kpt_mask)).mean()
-# # ==========================================================
 
-# # ==========================================================
+# ==========================================================
+# LEE-YOLO: SAFE BCE WRAPPER (MPS/RTX COMPATIBLE)
+# ==========================================================
+import os
+import torch
+import torch.nn as nn
+
 class SafeBCE(nn.Module):
     def __init__(self, pos_weight=None):
         super().__init__()
         self.pos_weight = pos_weight
-        # Standard loss, no pos_weight here to avoid the C++ backend panic
+        # Standard loss, no pos_weight here to avoid backend panic
         self.loss_fn = nn.BCEWithLogitsLoss(reduction="none")
 
     def forward(self, pred, target):
         # 1. THE ISOLATION BARRIER
-        # By cloning the tensors, we force PyTorch to allocate fresh, unbroken memory.
-        # This completely shields the complex backward math from the MPS strided-view bug.
         pred_safe = pred.clone()
         target_safe = target.clone()
 
         # 2. Calculate standard loss
         loss = self.loss_fn(pred_safe, target_safe)
 
-        # 3. Apply the Label-Shift weights manually
+        # 3. Apply the BBSE / Label-Shift weights manually
         if self.pos_weight is not None:
             # Align the 4 weights to the 4 classes
             w = self.pos_weight.view(1, 1, -1)
@@ -358,7 +361,6 @@ class SafeBCE(nn.Module):
             loss = loss * weight_mask
 
         return loss
-    # # ==========================================================
 
     # # ==========================================================
 class v8DetectionLoss:
@@ -373,21 +375,26 @@ class v8DetectionLoss:
         # # ==========================================================
         # # LEE-YOLO: DYNAMIC LABEL SHIFT WEIGHT LOADER (MPS CLONE BYPASS)
         # # ==========================================================
-        import os
-        import torch
-        import torch.nn as nn
+        # 1. Check if the Master Toggle is turned ON via train_robust.py
+        if os.environ.get("LEE_YOLO_ROBUST_MODE") == "True":
 
+            weight_path = os.path.join(os.getcwd(), "domain_weights.pt")
 
+            # 2. Check if the BBSE weights file actually exists
+            if os.path.exists(weight_path):
+                # Load the tensor calculated by your BBSE script
+                self.label_shift_weights = torch.load(weight_path, map_location=device, weights_only=True)
+                print(
+                    f"\n🛡️ [LEE-YOLO] Robust Mode ON: BBSE Domain weights loaded into SafeBCE: {self.label_shift_weights}")
+                self.bce = SafeBCE(pos_weight=self.label_shift_weights)
+            else:
+                print(
+                    "\n⚠️ [LEE-YOLO] Robust Mode ON but 'domain_weights.pt' is missing! Defaulting to standard training.")
+                self.bce = SafeBCE()
 
-        # Check the root of your PyCharm project for the weights file
-        weight_path = os.path.join(os.getcwd(), "domain_weights.pt")
-
-        if os.path.exists(weight_path):
-            self.label_shift_weights = torch.load(weight_path, map_location=device, weights_only=True)
-            print(f"\n🔄 [LEE-YOLO] Domain weights loaded safely (Clone Isolation Active): {self.label_shift_weights}")
-            self.bce = SafeBCE(pos_weight=self.label_shift_weights)
+        # 3. If the toggle is OFF (via train_baseline_short.py), bypass the weights entirely
         else:
-            print("\n⚠️ [LEE-YOLO] No domain_weights.pt found. Defaulting to standard training.")
+            # SafeBCE acts exactly like standard YOLO BCE when pos_weight is None
             self.bce = SafeBCE()
         # # ==========================================================
         # self.bce = nn.BCEWithLogitsLoss(reduction="none")

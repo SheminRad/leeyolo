@@ -1,3 +1,6 @@
+import os
+os.environ["LEE_YOLO_ROBUST_MODE"] = "True"
+
 from ultralytics import YOLO
 
 
